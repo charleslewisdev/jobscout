@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
+
+  --color-slate-925: #0b1120;
+  --color-slate-875: #111827;
+
+  --color-amber-450: #f5a623;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-slate-925 text-slate-200 font-sans antialiased;
+  background-image: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    rgba(245, 166, 35, 0.04),
+    transparent
+  );
+  min-height: 100vh;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: theme(--color-slate-700);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: theme(--color-slate-600);
+}
+
+/* Hide scrollbar for horizontal nav */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

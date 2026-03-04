@@ -1,0 +1,1 @@
+ALTER TABLE `job_postings` ADD `last_checked_at` text;

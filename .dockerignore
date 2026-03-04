@@ -1,0 +1,11 @@
+node_modules
+client/node_modules
+client/dist
+.git
+.env*
+*.md
+.vscode
+coverage
+dist
+data
+.claude

@@ -1,0 +1,94 @@
+{
+  "name": "JobScout",
+  "description": "Automated job matching tool for Portland-area job postings with LLM-powered candidate matching",
+  "permissions": {
+    "bash": {
+      "enabled": true,
+      "autoApprove": [
+        "git status",
+        "git diff",
+        "git log",
+        "git branch",
+        "git add",
+        "git commit",
+        "git push",
+        "git tag",
+        "git fetch",
+        "git stash",
+        "npm test",
+        "npm run test:run",
+        "npm run test:coverage",
+        "npm run lint",
+        "npm run format",
+        "npm run format:check",
+        "npm run build",
+        "npm run db:generate",
+        "npm run db:migrate",
+        "npm run pipeline:dry",
+        "npx tsc",
+        "npx drizzle-kit",
+        "npx tsx",
+        "npx vitest",
+        "docker-compose logs",
+        "docker-compose ps",
+        "docker ps",
+        "docker logs",
+        "ls",
+        "pwd",
+        "cat",
+        "find",
+        "grep",
+        "gh issue",
+        "gh pr"
+      ]
+    },
+    "edit": {
+      "enabled": true,
+      "autoApprove": true
+    },
+    "write": {
+      "enabled": true,
+      "autoApprove": false,
+      "requireConfirmation": [
+        "package.json",
+        "docker-compose.yml",
+        "Dockerfile*",
+        ".env*"
+      ]
+    },
+    "read": {
+      "enabled": true,
+      "autoApprove": true
+    }
+  },
+  "conventions": {
+    "branchNaming": {
+      "pattern": "(feat|fix|chore|refactor|docs|test)/*",
+      "examples": [
+        "feat/craigslist-adapter",
+        "fix/dedup-false-positives",
+        "chore/update-dependencies"
+      ]
+    },
+    "commitMessages": {
+      "format": "conventional",
+      "types": ["feat", "fix", "docs", "refactor", "perf", "test", "chore"],
+      "includeCoAuthor": true
+    },
+    "testing": {
+      "runBeforeCommit": true,
+      "framework": "vitest"
+    }
+  },
+  "workflows": {
+    "beforeCommit": [
+      "Run tests (npm run test:run)",
+      "Run linter (npm run lint)"
+    ],
+    "beforePR": [
+      "Ensure all tests pass",
+      "TypeScript compiles (npx tsc --noEmit)",
+      "Self-review completed"
+    ]
+  }
+}

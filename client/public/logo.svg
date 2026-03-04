@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="amber-glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="dark-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="248" fill="url(#dark-bg)" stroke="#f5a623" stroke-width="6"/>
+  <!-- Binoculars / Scout icon -->
+  <!-- Left lens -->
+  <circle cx="186" cy="230" r="72" fill="none" stroke="url(#amber-glow)" stroke-width="14"/>
+  <circle cx="186" cy="230" r="40" fill="none" stroke="#f5a623" stroke-width="6" opacity="0.4"/>
+  <!-- Right lens -->
+  <circle cx="326" cy="230" r="72" fill="none" stroke="url(#amber-glow)" stroke-width="14"/>
+  <circle cx="326" cy="230" r="40" fill="none" stroke="#f5a623" stroke-width="6" opacity="0.4"/>
+  <!-- Bridge between lenses -->
+  <path d="M222 198 Q256 178 290 198" fill="none" stroke="url(#amber-glow)" stroke-width="12" stroke-linecap="round"/>
+  <!-- Crosshair dots in lenses (target/scout feel) -->
+  <circle cx="186" cy="230" r="6" fill="#f5a623"/>
+  <circle cx="326" cy="230" r="6" fill="#f5a623"/>
+  <!-- Text: JOBSCOUT -->
+  <text x="256" y="360" text-anchor="middle" font-family="DM Sans, system-ui, sans-serif" font-weight="700" font-size="56" fill="#f5a623" letter-spacing="6">JOBSCOUT</text>
+  <!-- Subtitle -->
+  <text x="256" y="395" text-anchor="middle" font-family="DM Mono, monospace" font-weight="400" font-size="22" fill="#94a3b8" letter-spacing="4">PORTLAND JOB MATCHER</text>
+</svg>

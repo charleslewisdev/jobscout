@@ -1,0 +1,46 @@
+{
+  "identity": {
+    "name": "Sample Candidate",
+    "notes": "Looking to relocate to Portland. Currently in food service, open to warehouse/logistics work."
+  },
+  "compensation": {
+    "minimumPay": 17,
+    "preferredPayMin": 20,
+    "preferredPayMax": 28,
+    "payUnit": "hourly"
+  },
+  "benefits": {
+    "required": ["health insurance"],
+    "niceToHave": ["dental", "PTO", "401k"]
+  },
+  "schedule": {
+    "availability": "Monday-Friday, flexible on weekends",
+    "hoursPerWeek": { "min": 32, "max": 40 },
+    "remotePreference": "onsite",
+    "flexibilityNotes": "Prefer day shifts but can do swing"
+  },
+  "location": {
+    "acceptableAreas": ["Portland", "Beaverton", "Gresham", "Milwaukie", "Tigard"],
+    "maxCommuteMinutes": 45,
+    "willingToRelocate": true
+  },
+  "experience": {
+    "summary": "3 years food service (line cook, prep), 1 year retail. Reliable, punctual, physical work is fine.",
+    "skills": ["food handling", "inventory management", "forklift certification", "customer service"],
+    "certifications": ["Food Handler's Card", "Forklift Certified"],
+    "yearsOfExperience": 4,
+    "educationLevel": "High school diploma"
+  },
+  "preferences": {
+    "targetIndustries": ["warehouse", "logistics", "food service", "manufacturing", "retail"],
+    "targetRoles": ["warehouse worker", "forklift operator", "line cook", "prep cook", "stock clerk", "shipping/receiving"],
+    "excludeIndustries": ["telemarketing", "door-to-door sales"],
+    "excludeRoles": []
+  },
+  "dealbreakers": [
+    "no commission-only",
+    "no MLM",
+    "no unpaid training",
+    "no night shifts (after 11pm)"
+  ]
+}

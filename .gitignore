@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Data (SQLite, volumes)
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test output
+coverage/
+test-results/
+
+# Drizzle
+src/db/migrations/meta/
+
+# Client (Phase 2)
+client/node_modules/
+client/dist/
+
+# Claude local settings
+.claude/settings.local.json
+
+# Worktrees
+.worktrees/
+
+# Docs plans (session-specific working docs, not the vision doc)
+# docs/plans/*.wip.md
+
+# Logs
+*.log

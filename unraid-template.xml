@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>jobscout</Name>
+  <Repository>charleslewisdev/jobscout:latest</Repository>
+  <Registry>https://hub.docker.com/r/charleslewisdev/jobscout</Registry>
+  <Branch>
+    <Tag>latest</Tag>
+    <TagDescription>Latest stable release</TagDescription>
+  </Branch>
+  <Network>bridge</Network>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/charleslewisdev/jobscout</Support>
+  <Overview>Automated job matching — scans Portland-area job postings and matches against candidate profiles using LLM analysis.</Overview>
+  <WebUI>http://[IP]:[PORT:3080]/</WebUI>
+  <Icon>https://raw.githubusercontent.com/charleslewisdev/jobscout/main/client/public/icon.png</Icon>
+  <ExtraParams/>
+  <DateInstalled/>
+  <Description>JobScout scans job postings from multiple sources (Craigslist, Adzuna, Mac's List, NEOGOV, USAJobs, Careerjet, Workday, Poached Jobs) and matches them against candidate profiles using Claude AI. Self-hosted homelab tool.</Description>
+  <Config Name="Web UI Port" Target="3080" Default="3080" Mode="tcp" Description="Web interface and API port" Type="Port" Display="always" Required="true" Mask="false">3080</Config>
+  <Config Name="Database" Target="/app/data" Default="/mnt/nvme_cache/appdata/jobscout/data" Mode="rw" Description="SQLite database storage" Type="Path" Display="always" Required="true" Mask="false">/mnt/nvme_cache/appdata/jobscout/data</Config>
+  <Config Name="Seed Profiles" Target="/app/seeds" Default="/mnt/nvme_cache/appdata/jobscout/seeds" Mode="ro" Description="Candidate profile JSON files" Type="Path" Display="always" Required="true" Mask="false">/mnt/nvme_cache/appdata/jobscout/seeds</Config>
+  <Config Name="JWT Secret" Target="JWT_SECRET" Default="" Mode="" Description="Secret key for auth tokens (auto-generated if empty)" Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="Admin Email" Target="ADMIN_EMAIL" Default="" Mode="" Description="Email for initial admin account (created on first run)" Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Admin Password" Target="ADMIN_PASSWORD" Default="" Mode="" Description="Password for initial admin account (created on first run)" Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="Anthropic API Key" Target="ANTHROPIC_API_KEY" Default="" Mode="" Description="Required — Claude API key for LLM matching" Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="Adzuna App ID" Target="ADZUNA_APP_ID" Default="" Mode="" Description="Adzuna API app ID (optional)" Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Adzuna App Key" Target="ADZUNA_APP_KEY" Default="" Mode="" Description="Adzuna API app key (optional)" Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="USAJobs API Key" Target="USAJOBS_API_KEY" Default="" Mode="" Description="USAJobs API key for federal government jobs (optional)" Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="USAJobs Email" Target="USAJOBS_EMAIL" Default="" Mode="" Description="Email registered with USAJobs API (optional)" Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Careerjet API Key" Target="CAREERJET_API_KEY" Default="" Mode="" Description="Careerjet Publisher API key for job aggregation (optional)" Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="FlareSolverr URL" Target="FLARESOLVERR_URL" Default="http://flaresolverr:8191" Mode="" Description="FlareSolverr instance for Craigslist and Poached Jobs scraping" Type="Variable" Display="always" Required="false" Mask="false">http://flaresolverr:8191</Config>
+  <Config Name="Scan Schedule" Target="SCAN_CRON" Default="0 */6 * * *" Mode="" Description="Cron schedule for pipeline runs (default: every 6 hours)" Type="Variable" Display="advanced" Required="false" Mask="false">0 */6 * * *</Config>
+  <Config Name="Min Confidence" Target="MIN_CONFIDENCE_THRESHOLD" Default="25" Mode="" Description="Minimum match confidence score to store (0-100)" Type="Variable" Display="advanced" Required="false" Mask="false">25</Config>
+  <Config Name="Log Level" Target="LOG_LEVEL" Default="info" Mode="" Description="Logging level (debug, info, warn, error)" Type="Variable" Display="advanced" Required="false" Mask="false">info</Config>
+</Container>
