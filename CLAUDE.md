@@ -7,11 +7,11 @@ Automated job matching tool — scans Portland-area job postings from multiple s
 - **Runtime**: Node.js 22, TypeScript (strict), ESM modules
 - **Database**: SQLite via better-sqlite3 + Drizzle ORM
 - **LLM**: Anthropic API (Claude Haiku for bulk screening, Sonnet for optional re-evaluation)
-- **Ingestion**: Cheerio (HTML scraping), rss-parser (RSS feeds), REST API adapters
+- **Ingestion**: Cheerio (HTML scraping), puppeteer-core over Chrome CDP (JS-rendered pages), rss-parser (RSS feeds), REST API adapters
 - **Scheduling**: node-cron for periodic ingestion runs
 - **Logging**: Pino (structured JSON logging)
 - **Validation**: Zod (LLM response parsing, config validation)
-- **Frontend** (Phase 2): React 19, Vite, Tailwind CSS, TanStack Query, React Router
+- **Frontend**: React 19, Vite, Tailwind CSS, TanStack Query, React Router
 - **Deployment**: Docker on unRAID, SQLite volume mount
 
 ## Quick Reference
@@ -51,7 +51,7 @@ Scheduler (cron) → Source Adapters → Dedup → Pre-filter → LLM Matching �
 2. **Dedup** checks URL exact match + fuzzy title/company/location hash
 3. **Pre-filter** runs keyword/location heuristics against all active profiles — postings with zero potential matches skip LLM
 4. **LLM matching** sends each (posting × profile) pair to Claude Haiku for structured scoring
-5. Results stored in SQLite, surfaced via CLI (Phase 1) or web dashboard (Phase 2)
+5. Results stored in SQLite, surfaced via the web dashboard
 
 ### Source Adapter Pattern
 
@@ -61,19 +61,21 @@ Each source is a single file in `src/adapters/` implementing a common interface.
 
 | Source | Type | Adapter |
 |--------|------|---------|
-| Craigslist Portland | FlareSolverr scrape | `craigslist.ts` |
 | Adzuna API | REST API | `adzuna.ts` |
 | Mac's List | HTML scrape | `macslist.ts` |
 | NEOGOV Government Jobs | RSS | `neogov.ts` |
 | USAJobs | REST API | `usajobs.ts` |
 | Careerjet | REST API | `careerjet.ts` |
 | Workday Government Jobs | REST API (POST) | `workday.ts` |
-| Poached Jobs | FlareSolverr scrape | `poached.ts` |
+| Poached Jobs | Chrome CDP scrape | `poached.ts` |
+| The Muse | REST API | `muse.ts` |
+| PDX Pipeline | WordPress REST API | `pdxpipeline.ts` |
+
+Craigslist and Built In were removed because their terms ban automated access. Read a site's terms before adding it.
 
 ### External Services (on unRAID)
 
-- **FlareSolverr** — For JS-rendered pages. HTTP API at `FLARESOLVERR_URL`
-- **Chrome CDP** — For complex browser automation. WebSocket at `CHROME_CDP_URL`
+- **Chrome CDP** — For JS-rendered pages (Poached Jobs). HTTP URL at `CHROME_CDP_URL`
 
 ## Database
 
@@ -87,7 +89,7 @@ Uses Drizzle ORM with better-sqlite3. Schema in `src/db/schema.ts`. Migrations v
 
 | Area | Skill | What it covers |
 |------|-------|----------------|
-| **Session start** | `start-session` | Branch context, plan docs, brain query, structured briefing |
+| **Session start** | `start-session` | Branch context, recent history, health check, structured briefing |
 | **Testing** | `writing-tests` | Vitest conventions, adapter testing, LLM mock patterns |
 | **Code review** | `self-review` | Quality checklist, automated checks |
 | **LLM integration** | `claude-developer-platform` | Anthropic API patterns, structured output |
@@ -123,8 +125,8 @@ Run `/start-session` at the beginning of every session.
 Required: `ANTHROPIC_API_KEY`
 Database: `DATABASE_URL` (default: `./data/jobscout.db`)
 Auth: `JWT_SECRET` (recommended), `ADMIN_EMAIL`, `ADMIN_PASSWORD` (first deploy)
-Sources: `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, `USAJOBS_API_KEY`, `USAJOBS_EMAIL`, `CAREERJET_AFFID`
-External: `FLARESOLVERR_URL`, `CHROME_CDP_URL`
+Sources: `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, `USAJOBS_API_KEY`, `USAJOBS_EMAIL`, `CAREERJET_API_KEY`
+External: `CHROME_CDP_URL`
 Pipeline: `SCAN_CRON`, `MIN_CONFIDENCE_THRESHOLD`, `DRY_RUN`
 Logging: `LOG_LEVEL`
 
@@ -141,7 +143,7 @@ src/
   index.ts        # Entry point
 shared/
   types.ts        # TypeScript interfaces shared across src/ and client/
-client/           # React app (Phase 2)
+client/           # React app
 seeds/            # Sample candidate profiles as JSON
 data/             # SQLite database (gitignored, Docker volume)
 ```

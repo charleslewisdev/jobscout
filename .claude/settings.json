@@ -65,7 +65,7 @@
     "branchNaming": {
       "pattern": "(feat|fix|chore|refactor|docs|test)/*",
       "examples": [
-        "feat/craigslist-adapter",
+        "feat/muse-adapter",
         "fix/dedup-false-positives",
         "chore/update-dependencies"
       ]

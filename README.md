@@ -2,9 +2,11 @@
 
 Automated job matching tool that scans job postings from multiple sources and matches them against candidate profiles using LLM-powered analysis. Self-hosted, designed for homelab deployment.
 
+I built JobScout to help friends and family find work in the Portland area, so the default sources and locations in `src/index.ts` are Portland-specific. Point them at another region to use it elsewhere.
+
 ## Features
 
-- **Multi-source ingestion** — pulls listings from 10 job boards via APIs, RSS, and web scraping
+- **Multi-source ingestion** — pulls listings from 9 job sources via APIs, RSS, and web scraping
 - **LLM matching** — Claude AI scores each posting against candidate profiles with structured reasoning
 - **Smart dedup** — URL exact match + fuzzy title/company/location hashing prevents duplicates
 - **Pre-filtering** — keyword and location heuristics skip irrelevant postings before LLM calls
@@ -37,7 +39,7 @@ Place JSON profile files in the `seeds/` directory. Each profile describes a can
 | Runtime | Node.js 22, TypeScript (strict ESM) |
 | Database | SQLite via better-sqlite3 + Drizzle ORM |
 | LLM | Anthropic API (Claude Haiku for screening) |
-| Scraping | Cheerio, Puppeteer (via Chrome CDP), FlareSolverr |
+| Scraping | Cheerio, puppeteer-core (via Chrome CDP) |
 | Scheduling | node-cron |
 | Validation | Zod |
 | Logging | Pino (structured JSON) |
@@ -60,18 +62,19 @@ Scheduler (cron) → Source Adapters → Dedup → Pre-filter → LLM Matching �
 
 | Source | Method | Adapter |
 |--------|--------|---------|
-| Craigslist | FlareSolverr scrape | `craigslist.ts` |
 | Adzuna | REST API | `adzuna.ts` |
 | Mac's List | HTML scrape | `macslist.ts` |
 | NEOGOV | RSS | `neogov.ts` |
 | USAJobs | REST API | `usajobs.ts` |
 | Careerjet | REST API | `careerjet.ts` |
 | Workday | REST API | `workday.ts` |
-| Poached Jobs | FlareSolverr scrape | `poached.ts` |
+| Poached Jobs | Chrome CDP scrape | `poached.ts` |
 | The Muse | REST API | `muse.ts` |
-| PDX Pipeline | HTML scrape | `pdxpipeline.ts` |
+| PDX Pipeline | WordPress REST API | `pdxpipeline.ts` |
 
 Each adapter is a single file in `src/adapters/` implementing a common interface. The pipeline orchestrator handles dedup, pre-filtering, and LLM matching.
+
+Before adding a source, read its terms of use. Prefer an official API or feed, and skip any site that bans automated access. Craigslist and Built In were removed for that reason.
 
 ## Docker Deployment
 
@@ -112,16 +115,15 @@ An unRAID template is included (`unraid-template.xml`) for Community Application
 |----------|----------|-------------|
 | `ANTHROPIC_API_KEY` | Yes | Claude API key for LLM matching |
 | `DATABASE_URL` | No | SQLite path (default: `./data/jobscout.db`) |
-| `FLARESOLVERR_URL` | No | FlareSolverr instance for scraping |
-| `CHROME_CDP_URL` | No | Chrome CDP instance for browser automation |
+| `CHROME_CDP_URL` | No | Chrome CDP instance for Poached Jobs (default: `http://chrome-shell-headless:9222`) |
 | `SCAN_CRON` | No | Cron schedule (default: `0 */6 * * *`) |
-| `MIN_CONFIDENCE_THRESHOLD` | No | Minimum match score 0-100 (default: `25`) |
+| `MIN_CONFIDENCE_THRESHOLD` | No | Minimum match score 0-100 (default: `40`) |
 | `DRY_RUN` | No | Skip LLM calls and DB writes |
 | `ADZUNA_APP_ID` | No | Adzuna API credentials |
 | `ADZUNA_APP_KEY` | No | |
 | `USAJOBS_API_KEY` | No | USAJobs API credentials |
 | `USAJOBS_EMAIL` | No | |
-| `CAREERJET_AFFID` | No | Careerjet affiliate ID |
+| `CAREERJET_API_KEY` | No | Careerjet API key (`CAREERJET_AFFID` also works) |
 | `JWT_SECRET` | No | JWT signing key (auto-generated if empty) |
 | `ADMIN_EMAIL` | No | Initial admin account email |
 | `ADMIN_PASSWORD` | No | Initial admin account password |

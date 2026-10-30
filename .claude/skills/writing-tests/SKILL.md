@@ -19,8 +19,8 @@ Tests live alongside source files:
 ```
 src/
   adapters/
-    craigslist.ts
-    craigslist.test.ts       # Adapter tests
+    neogov.ts
+    neogov.test.ts           # Adapter tests
   matching/
     prefilter.ts
     prefilter.test.ts        # Pre-filter tests
@@ -68,7 +68,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
-describe("CraigslistAdapter", () => {
+describe("NeogovAdapter", () => {
   beforeEach(() => {
     mockFetch.mockReset();
   });
@@ -79,13 +79,13 @@ describe("CraigslistAdapter", () => {
       text: () => Promise.resolve(SAMPLE_RSS_XML),
     });
 
-    const adapter = new CraigslistAdapter(config);
+    const adapter = new NeogovAdapter(config);
     const listings = await adapter.fetch();
 
     expect(listings).toHaveLength(3);
     expect(listings[0]).toMatchObject({
       title: expect.any(String),
-      sourceUrl: expect.stringContaining("craigslist"),
+      sourceUrl: expect.stringContaining("governmentjobs"),
       description: expect.any(String),
     });
   });
@@ -93,7 +93,7 @@ describe("CraigslistAdapter", () => {
   it("returns empty array on network error", async () => {
     mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
-    const adapter = new CraigslistAdapter(config);
+    const adapter = new NeogovAdapter(config);
     const listings = await adapter.fetch();
 
     expect(listings).toEqual([]);
@@ -111,7 +111,7 @@ const SAMPLE_RSS_XML = `<?xml version="1.0"?>
   <channel>
     <item>
       <title>Warehouse Worker - $18/hr</title>
-      <link>https://portland.craigslist.org/job/123</link>
+      <link>https://www.governmentjobs.com/careers/portlandor/jobs/123</link>
       <description>Full time warehouse position...</description>
     </item>
   </channel>

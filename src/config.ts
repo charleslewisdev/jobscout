@@ -52,6 +52,6 @@ export const config = {
   // Logging
   logLevel: process.env.LOG_LEVEL || "info",
 
-  // Server (Phase 2)
+  // Server
   port: parseInt(process.env.PORT || "3080", 10),
 } as const;
