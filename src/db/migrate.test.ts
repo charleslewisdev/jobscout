@@ -1,10 +1,8 @@
 import { readFileSync } from "node:fs";
-
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-
-import { sources } from "./schema.js";
 import { createTestDb } from "../test-helpers.js";
+import { sources } from "./schema.js";
 
 const MIGRATION = "src/db/migrations/0004_disable_retired_sources.sql";
 
