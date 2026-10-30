@@ -27,7 +27,7 @@ Based on which files changed, invoke the corresponding skills:
 | `src/db/**` | `sqlite-raw-performance` |
 | `shared/**` | `typescript-advanced-types` |
 | `Dockerfile*`, `docker-compose*` | `docker-best-practices` |
-| `client/**` (Phase 2) | `frontend-design`, `tailwind-css-patterns` |
+| `client/**` | `frontend-design`, `tailwind-css-patterns` |
 | Test files (`**/*.test.*`) | `writing-tests`, `vitest` |
 
 ## Step 3: Code Quality Review

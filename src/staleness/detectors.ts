@@ -219,78 +219,6 @@ export const careerjetDetector: ExpiryDetector = async (
 };
 
 // ---------------------------------------------------------------------------
-// Craigslist detector
-// ---------------------------------------------------------------------------
-
-const CRAIGSLIST_EXPIRED_PATTERNS = [
-  /this posting has been deleted/i,
-  /this posting has been flagged/i,
-  /this posting has expired/i,
-  /the posting has expired/i,
-];
-
-export const craigslistDetector: ExpiryDetector = async (
-  _url: string,
-  response: Response,
-): Promise<DetectorResult> => {
-  const { status } = response;
-
-  if (status === 404 || status === 410) {
-    return { verdict: "expired", reason: "Craigslist posting removed" };
-  }
-
-  if (status === 200) {
-    const body = await response.text();
-
-    for (const pattern of CRAIGSLIST_EXPIRED_PATTERNS) {
-      if (pattern.test(body)) {
-        return { verdict: "expired", reason: "Craigslist posting expired" };
-      }
-    }
-
-    return { verdict: "active", reason: "Craigslist posting still available" };
-  }
-
-  return { verdict: "unknown", reason: `Craigslist HTTP ${status}` };
-};
-
-// ---------------------------------------------------------------------------
-// Built In detector
-// ---------------------------------------------------------------------------
-
-const BUILTIN_EXPIRED_PATTERNS = [
-  /this job is no longer available/i,
-  /job has been removed/i,
-  /no longer accepting applications/i,
-  /this position has been filled/i,
-];
-
-export const builtinDetector: ExpiryDetector = async (
-  _url: string,
-  response: Response,
-): Promise<DetectorResult> => {
-  const { status } = response;
-
-  if (status === 404) {
-    return { verdict: "expired", reason: "Built In posting not found" };
-  }
-
-  if (status === 200) {
-    const body = await response.text();
-
-    for (const pattern of BUILTIN_EXPIRED_PATTERNS) {
-      if (pattern.test(body)) {
-        return { verdict: "expired", reason: "Built In posting expired" };
-      }
-    }
-
-    return { verdict: "active", reason: "Built In posting still available" };
-  }
-
-  return { verdict: "unknown", reason: `Built In HTTP ${status}` };
-};
-
-// ---------------------------------------------------------------------------
 // The Muse detector
 // ---------------------------------------------------------------------------
 
@@ -336,15 +264,27 @@ const detectors: Record<string, ExpiryDetector> = {
   "adzuna.com": adzunaDetector,
   "jobviewtrack.com": careerjetDetector,
   "www.careerjet.com": careerjetDetector,
-  "portland.craigslist.org": craigslistDetector,
-  "builtin.com": builtinDetector,
-  "www.builtin.com": builtinDetector,
   "www.themuse.com": museDetector,
   "www.pdxpipeline.com": pdxpipelineDetector,
 };
 
+/** Hosts whose terms ban automated access. Older postings stay, but are never fetched. */
+const NO_FETCH_HOSTS = new Set([
+  "portland.craigslist.org",
+  "builtin.com",
+  "www.builtin.com",
+]);
+
 /** Pattern: *.wd*.myworkdayjobs.com */
 const WORKDAY_PATTERN = /^.+\.wd\d*\.myworkdayjobs\.com$/;
+
+export function isFetchAllowed(url: string): boolean {
+  try {
+    return !NO_FETCH_HOSTS.has(new URL(url).hostname);
+  } catch {
+    return true;
+  }
+}
 
 /**
  * Resolves the appropriate expiry detector for a given URL.

@@ -9,7 +9,7 @@ import { eq, sql, asc } from "drizzle-orm";
 import type { AppDb } from "../db/index.js";
 import { jobPostings } from "../db/schema.js";
 import { logger } from "../utils/logger.js";
-import { getDetector } from "./detectors.js";
+import { getDetector, isFetchAllowed } from "./detectors.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -84,6 +84,15 @@ export async function runStalenessCheck(
   for (let i = 0; i < postings.length; i++) {
     const posting = postings[i];
     result.checked++;
+
+    if (!isFetchAllowed(posting.sourceUrl)) {
+      db.update(jobPostings)
+        .set({ lastCheckedAt: new Date().toISOString() })
+        .where(eq(jobPostings.id, posting.id))
+        .run();
+      result.unknown++;
+      continue;
+    }
 
     // Add delay between requests (skip before the first one)
     if (i > 0 && delayMs > 0) {

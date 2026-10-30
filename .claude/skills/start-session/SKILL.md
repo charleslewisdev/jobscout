@@ -1,11 +1,11 @@
 ---
 name: start-session
-description: Use when starting a new coding session, beginning work on a branch, or resuming after a context reset. Gathers branch context, in-progress work, plan documents, and recent history to produce a briefing before any code is written.
+description: Use when starting a new coding session, beginning work on a branch, or resuming after a context reset. Gathers branch context, in-progress work, and recent history to produce a briefing before any code is written.
 ---
 
 # Start Session
 
-Orientation before action. Gather context from the current branch, git state, plan documents, and recent history, then present a structured briefing.
+Orientation before action. Gather context from the current branch, git state, and recent history, then present a structured briefing.
 
 **Announce at start:** "Using start-session to orient before we begin."
 
@@ -29,21 +29,6 @@ git log main..HEAD --oneline 2>/dev/null || git log --oneline -5
 
 Based on the branch name, find relevant context:
 
-### Plan Documents
-
-```bash
-# Search for plan docs matching branch topic
-ls docs/plans/ | grep -i "<branch-topic-keywords>"
-
-# Also check for today's date or recent dates
-ls docs/plans/ | tail -10
-```
-
-If a plan doc exists, read it and extract:
-- Current status
-- Implementation phases
-- Key decisions made
-
 ### Related Issues
 
 ```bash
@@ -60,23 +45,6 @@ git log --oneline -10 --format="%h %s (%ar)"
 # Any stashed work?
 git stash list
 ```
-
-## Step 2b: Query the Brain
-
-Search the MCP memory service for context relevant to the branch topic or planned work:
-
-```
-memory_search(query: "<branch-topic-keywords>", limit: 5)
-memory_search(query: "gotchas <area>", limit: 5)
-```
-
-Look for:
-- Prior decisions and their rationale
-- Known gotchas in the area being worked on
-- Patterns established in previous sessions
-- Bug history and recurring issues
-
-Include relevant brain findings in the briefing under a "Brain Context" section.
 
 ## Step 3: Check Project Health
 
@@ -109,12 +77,8 @@ Format the gathered information as a structured briefing:
 **Status**: <fresh | in-progress | uncommitted changes detected>
 
 ### Context
-- <Plan doc summary if found, or "No plan doc found">
 - <Related issues if found>
 - <Recent commit summary>
-
-### Brain Context
-- <Relevant memories, decisions, gotchas>
 
 ### Relevant Skills
 Based on the branch topic, these skills are likely relevant:
@@ -122,7 +86,7 @@ Based on the branch topic, these skills are likely relevant:
 - <skill-2>: <why>
 
 ### Suggested Next Steps
-- <Based on branch state and plan doc status>
+- <Based on branch state>
 ```
 
 ## Step 5: Confirm Direction
@@ -153,4 +117,3 @@ Map branch topics to relevant skills:
 - Does not make decisions about what to work on (that's the human's call)
 - Does not start coding (wait for confirmation)
 - Does not replace `work-ticket` (which handles the full ticket lifecycle)
-- Queries brain for context but does not store new memories (that happens at work completion)

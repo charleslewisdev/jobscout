@@ -10,7 +10,7 @@ services:
     environment:
       - NODE_ENV=production
     restart: unless-stopped
-    # FlareSolverr and Chrome CDP are already running as separate
-    # containers on unRAID — ensure network connectivity.
+    # Chrome CDP is already running as a separate
+    # container on unRAID — ensure network connectivity.
     # On unRAID, containers on the same custom network or bridge
     # can reach each other by container name.

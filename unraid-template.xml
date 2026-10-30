@@ -15,7 +15,7 @@
   <Icon>https://raw.githubusercontent.com/charleslewisdev/jobscout/main/client/public/icon.png</Icon>
   <ExtraParams/>
   <DateInstalled/>
-  <Description>JobScout scans job postings from multiple sources (Craigslist, Adzuna, Mac's List, NEOGOV, USAJobs, Careerjet, Workday, Poached Jobs) and matches them against candidate profiles using Claude AI. Self-hosted homelab tool.</Description>
+  <Description>JobScout scans job postings from multiple sources (Adzuna, Mac's List, NEOGOV, USAJobs, Careerjet, Workday, Poached Jobs, The Muse, PDX Pipeline) and matches them against candidate profiles using Claude AI. Self-hosted homelab tool.</Description>
   <Config Name="Web UI Port" Target="3080" Default="3080" Mode="tcp" Description="Web interface and API port" Type="Port" Display="always" Required="true" Mask="false">3080</Config>
   <Config Name="Database" Target="/app/data" Default="/mnt/nvme_cache/appdata/jobscout/data" Mode="rw" Description="SQLite database storage" Type="Path" Display="always" Required="true" Mask="false">/mnt/nvme_cache/appdata/jobscout/data</Config>
   <Config Name="Seed Profiles" Target="/app/seeds" Default="/mnt/nvme_cache/appdata/jobscout/seeds" Mode="ro" Description="Candidate profile JSON files" Type="Path" Display="always" Required="true" Mask="false">/mnt/nvme_cache/appdata/jobscout/seeds</Config>
@@ -28,8 +28,8 @@
   <Config Name="USAJobs API Key" Target="USAJOBS_API_KEY" Default="" Mode="" Description="USAJobs API key for federal government jobs (optional)" Type="Variable" Display="always" Required="false" Mask="true"/>
   <Config Name="USAJobs Email" Target="USAJOBS_EMAIL" Default="" Mode="" Description="Email registered with USAJobs API (optional)" Type="Variable" Display="always" Required="false" Mask="false"/>
   <Config Name="Careerjet API Key" Target="CAREERJET_API_KEY" Default="" Mode="" Description="Careerjet Publisher API key for job aggregation (optional)" Type="Variable" Display="always" Required="false" Mask="true"/>
-  <Config Name="FlareSolverr URL" Target="FLARESOLVERR_URL" Default="http://flaresolverr:8191" Mode="" Description="FlareSolverr instance for Craigslist and Poached Jobs scraping" Type="Variable" Display="always" Required="false" Mask="false">http://flaresolverr:8191</Config>
+  <Config Name="Chrome CDP URL" Target="CHROME_CDP_URL" Default="http://chrome-shell-headless:9222" Mode="" Description="Chrome CDP instance for Poached Jobs scraping" Type="Variable" Display="always" Required="false" Mask="false">http://chrome-shell-headless:9222</Config>
   <Config Name="Scan Schedule" Target="SCAN_CRON" Default="0 */6 * * *" Mode="" Description="Cron schedule for pipeline runs (default: every 6 hours)" Type="Variable" Display="advanced" Required="false" Mask="false">0 */6 * * *</Config>
-  <Config Name="Min Confidence" Target="MIN_CONFIDENCE_THRESHOLD" Default="25" Mode="" Description="Minimum match confidence score to store (0-100)" Type="Variable" Display="advanced" Required="false" Mask="false">25</Config>
+  <Config Name="Min Confidence" Target="MIN_CONFIDENCE_THRESHOLD" Default="40" Mode="" Description="Minimum match confidence score to store (0-100)" Type="Variable" Display="advanced" Required="false" Mask="false">40</Config>
   <Config Name="Log Level" Target="LOG_LEVEL" Default="info" Mode="" Description="Logging level (debug, info, warn, error)" Type="Variable" Display="advanced" Required="false" Mask="false">info</Config>
 </Container>

@@ -9,8 +9,8 @@ vi.mock("../utils/chrome-cdp.js", () => ({
   ChromeCDP: vi.fn().mockImplementation(function () {
     return {
       getRenderedHtml: (...args: unknown[]) =>
-        (mockGetRenderedHtml as Function)(...args),
-      isAvailable: () => (mockIsAvailable as Function)(),
+        (mockGetRenderedHtml as (...a: unknown[]) => unknown)(...args),
+      isAvailable: () => (mockIsAvailable as () => unknown)(),
     };
   }),
 }));

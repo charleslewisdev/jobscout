@@ -29,12 +29,12 @@ Thumbs.db
 coverage/
 test-results/
 
-# Drizzle
-src/db/migrations/meta/
-
-# Client (Phase 2)
+# Client
 client/node_modules/
 client/dist/
+
+# TypeScript incremental build info
+*.tsbuildinfo
 
 # Claude local settings
 .claude/settings.local.json
@@ -42,8 +42,8 @@ client/dist/
 # Worktrees
 .worktrees/
 
-# Docs plans (session-specific working docs, not the vision doc)
-# docs/plans/*.wip.md
+# Local notes (job listings and leads for named people)
+notes/
 
 # Logs
 *.log
