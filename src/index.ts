@@ -1,9 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 import { AdzunaAdapter } from "./adapters/adzuna.js";
-import { BuiltInAdapter } from "./adapters/builtin.js";
 import { CareerjetAdapter } from "./adapters/careerjet.js";
-import { CraigslistAdapter } from "./adapters/craigslist.js";
 import { MacsListAdapter } from "./adapters/macslist.js";
 import { MuseAdapter } from "./adapters/muse.js";
 import { NeogovAdapter } from "./adapters/neogov.js";
@@ -42,16 +40,6 @@ async function main() {
 
   // Build adapters — keyword-dependent ones are rebuilt each pipeline run
   const staticAdapters = [
-    new CraigslistAdapter({
-      id: "craigslist-pdx",
-      name: "Craigslist Portland",
-      type: "scrape",
-      isEnabled: true,
-      config: {
-        region: "portland",
-        categories: ["jjj"],
-      },
-    }),
     new MacsListAdapter({
       id: "macslist",
       name: "Mac's List",
@@ -71,17 +59,6 @@ async function main() {
         baseUrl: "https://poachedjobs.com",
         location: "portland+or",
         chromeCdpUrl: config.chromeCdpUrl,
-      },
-    }),
-    new BuiltInAdapter({
-      id: "builtin-pdx",
-      name: "Built In Portland",
-      type: "scrape",
-      isEnabled: true,
-      config: {
-        baseUrl: "https://builtin.com",
-        searchPath: "/jobs/portland",
-        maxPages: 5,
       },
     }),
     new MuseAdapter({

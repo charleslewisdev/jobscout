@@ -59,6 +59,31 @@ const testOpts = (fetchFn: typeof fetch) => ({
 describe("runStalenessCheck", () => {
   // ── Batch selection ────────────────────────────────────────────────────
 
+  describe("hosts that ban automated access", () => {
+    it("never fetches them, keeps the posting active and records the check", async () => {
+      const db = createTestDb();
+      seedPosting(db, {
+        id: "cl-1",
+        sourceUrl: "https://portland.craigslist.org/mlt/lab/d/test/1.html",
+      });
+      seedPosting(db, { id: "bi-1", sourceUrl: "https://builtin.com/job/test/1" });
+
+      const fetchFn = mockFetch(200);
+      const result = await runStalenessCheck(db, testOpts(fetchFn));
+
+      expect(fetchFn).not.toHaveBeenCalled();
+      expect(result).toMatchObject({ checked: 2, unknown: 2, expired: 0 });
+
+      const posting = db
+        .select()
+        .from(jobPostings)
+        .where(eq(jobPostings.id, "cl-1"))
+        .get();
+      expect(posting?.isActive).toBe(true);
+      expect(posting?.lastCheckedAt).toBeTruthy();
+    });
+  });
+
   describe("batch selection", () => {
     it("selects only active postings", async () => {
       const db = createTestDb();

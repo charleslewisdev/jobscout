@@ -2,12 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   adzunaDetector,
-  builtinDetector,
   careerjetDetector,
-  craigslistDetector,
   defaultDetector,
   type DetectorResult,
   getDetector,
+  isFetchAllowed,
   macslistDetector,
   neogovDetector,
   workdayDetector,
@@ -396,141 +395,6 @@ describe("careerjetDetector", () => {
 });
 
 // ---------------------------------------------------------------------------
-// craigslistDetector
-// ---------------------------------------------------------------------------
-
-describe("craigslistDetector", () => {
-  const url = "https://portland.craigslist.org/mlt/lab/d/warehouse-worker/123.html";
-
-  it("returns expired for 404", async () => {
-    const result = await craigslistDetector(url, mockResponse(404));
-    expect(result).toEqual<DetectorResult>({
-      verdict: "expired",
-      reason: "Craigslist posting removed",
-    });
-  });
-
-  it("returns expired for 410 Gone", async () => {
-    const result = await craigslistDetector(url, mockResponse(410));
-    expect(result).toEqual<DetectorResult>({
-      verdict: "expired",
-      reason: "Craigslist posting removed",
-    });
-  });
-
-  it('returns expired when body contains "this posting has been deleted"', async () => {
-    const html = `<html><body>
-      <div class="removed">This posting has been deleted by its author.</div>
-    </body></html>`;
-    const result = await craigslistDetector(url, mockResponse(200, html));
-    expect(result).toEqual<DetectorResult>({
-      verdict: "expired",
-      reason: "Craigslist posting expired",
-    });
-  });
-
-  it('returns expired when body contains "this posting has been flagged"', async () => {
-    const html = `<html><body><p>This posting has been flagged for removal.</p></body></html>`;
-    const result = await craigslistDetector(url, mockResponse(200, html));
-    expect(result.verdict).toBe("expired");
-  });
-
-  it('returns expired when body contains "this posting has expired"', async () => {
-    const html = `<html><body><p>This posting has expired.</p></body></html>`;
-    const result = await craigslistDetector(url, mockResponse(200, html));
-    expect(result.verdict).toBe("expired");
-  });
-
-  it("returns active for 200 with valid posting", async () => {
-    const html = `<html><body>
-      <section id="postingbody">Looking for a warehouse worker...</section>
-    </body></html>`;
-    const result = await craigslistDetector(url, mockResponse(200, html));
-    expect(result).toEqual<DetectorResult>({
-      verdict: "active",
-      reason: "Craigslist posting still available",
-    });
-  });
-
-  it("returns unknown for 403", async () => {
-    const result = await craigslistDetector(url, mockResponse(403));
-    expect(result.verdict).toBe("unknown");
-  });
-
-  it("returns unknown for 500", async () => {
-    const result = await craigslistDetector(url, mockResponse(500));
-    expect(result.verdict).toBe("unknown");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// builtinDetector
-// ---------------------------------------------------------------------------
-
-describe("builtinDetector", () => {
-  const url = "https://builtin.com/job/senior-engineer/111";
-
-  it("returns expired for 404", async () => {
-    const result = await builtinDetector(url, mockResponse(404));
-    expect(result).toEqual<DetectorResult>({
-      verdict: "expired",
-      reason: "Built In posting not found",
-    });
-  });
-
-  it('returns expired when body contains "this job is no longer available"', async () => {
-    const html = `<html><body>
-      <div class="alert">This job is no longer available.</div>
-    </body></html>`;
-    const result = await builtinDetector(url, mockResponse(200, html));
-    expect(result).toEqual<DetectorResult>({
-      verdict: "expired",
-      reason: "Built In posting expired",
-    });
-  });
-
-  it('returns expired when body contains "job has been removed"', async () => {
-    const html = `<html><body><p>This job has been removed.</p></body></html>`;
-    const result = await builtinDetector(url, mockResponse(200, html));
-    expect(result.verdict).toBe("expired");
-  });
-
-  it('returns expired when body contains "no longer accepting applications"', async () => {
-    const html = `<html><body><p>This position is no longer accepting applications.</p></body></html>`;
-    const result = await builtinDetector(url, mockResponse(200, html));
-    expect(result.verdict).toBe("expired");
-  });
-
-  it('returns expired when body contains "this position has been filled"', async () => {
-    const html = `<html><body><p>This position has been filled.</p></body></html>`;
-    const result = await builtinDetector(url, mockResponse(200, html));
-    expect(result.verdict).toBe("expired");
-  });
-
-  it("returns active for 200 with valid job posting", async () => {
-    const html = `<html><body>
-      <h1>Senior Engineer</h1>
-      <div class="job-description">Build amazing products...</div>
-    </body></html>`;
-    const result = await builtinDetector(url, mockResponse(200, html));
-    expect(result).toEqual<DetectorResult>({
-      verdict: "active",
-      reason: "Built In posting still available",
-    });
-  });
-
-  it("returns unknown for 403", async () => {
-    const result = await builtinDetector(url, mockResponse(403));
-    expect(result.verdict).toBe("unknown");
-  });
-
-  it("returns unknown for 500", async () => {
-    const result = await builtinDetector(url, mockResponse(500));
-    expect(result.verdict).toBe("unknown");
-  });
-});
-
-// ---------------------------------------------------------------------------
 // getDetector — domain matching
 // ---------------------------------------------------------------------------
 
@@ -571,23 +435,6 @@ describe("getDetector", () => {
     it("returns careerjetDetector for www.careerjet.com", () => {
       const detector = getDetector("https://www.careerjet.com/jobad/us12345");
       expect(detector).toBe(careerjetDetector);
-    });
-
-    it("returns craigslistDetector for portland.craigslist.org", () => {
-      const detector = getDetector(
-        "https://portland.craigslist.org/mlt/lab/d/warehouse-worker/123.html",
-      );
-      expect(detector).toBe(craigslistDetector);
-    });
-
-    it("returns builtinDetector for builtin.com", () => {
-      const detector = getDetector("https://builtin.com/job/engineer/111");
-      expect(detector).toBe(builtinDetector);
-    });
-
-    it("returns builtinDetector for www.builtin.com", () => {
-      const detector = getDetector("https://www.builtin.com/job/engineer/111");
-      expect(detector).toBe(builtinDetector);
     });
   });
 
@@ -646,6 +493,21 @@ describe("getDetector", () => {
 // Cross-cutting: unknown verdicts are never treated as expired
 // ---------------------------------------------------------------------------
 
+describe("isFetchAllowed", () => {
+  it.each([
+    "https://portland.craigslist.org/mlt/lab/d/warehouse-worker/123.html",
+    "https://builtin.com/job/engineer/111",
+    "https://www.builtin.com/job/engineer/111",
+  ])("blocks %s", (url) => {
+    expect(isFetchAllowed(url)).toBe(false);
+  });
+
+  it("allows other hosts and leaves invalid URLs to the fetch path", () => {
+    expect(isFetchAllowed("https://jobs.macslist.org/job/1")).toBe(true);
+    expect(isFetchAllowed("not a url")).toBe(true);
+  });
+});
+
 describe("conservative detection principle", () => {
   it("unknown verdicts never have verdict=expired", async () => {
     // Collect all unknown results from various detectors and status codes
@@ -660,8 +522,6 @@ describe("conservative detection principle", () => {
       adzunaDetector("https://www.adzuna.com/details/1", mockResponse(200)),
       adzunaDetector("https://www.adzuna.com/details/1", mockResponse(403)),
       careerjetDetector("https://jobviewtrack.com/job/1", mockResponse(403)),
-      craigslistDetector("https://portland.craigslist.org/job/1", mockResponse(403)),
-      builtinDetector("https://builtin.com/job/1", mockResponse(403)),
     ];
 
     const results = await Promise.all(unknownScenarios);
