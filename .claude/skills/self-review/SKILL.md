@@ -1,6 +1,6 @@
 ---
 name: self-review
-description: Perform a code quality review before creating a PR. Invoked as part of the work-ticket lifecycle after verification-before-completion and before finishing-a-development-branch.
+description: Perform a code quality review before creating a PR. Use after the project's checks pass and before opening a PR or merging.
 ---
 
 # Code Review Quality Check
@@ -18,26 +18,9 @@ Review the diff to understand the scope and intent of the changes.
 
 ## Step 2: Invoke Relevant Best-Practice Skills
 
-Based on which files changed, invoke the corresponding skills:
-
-| Files changed | Skill to invoke |
-|---|---|
-| `src/adapters/**` | `writing-tests` (adapter test conventions) |
-| `src/matching/**` | `claude-developer-platform`, `writing-tests` |
-| `src/db/**` | `sqlite-raw-performance` |
-| `shared/**` | `typescript-advanced-types` |
-| `Dockerfile*`, `docker-compose*` | `docker-best-practices` |
-| `client/**` | `frontend-design`, `tailwind-css-patterns` |
-| Test files (`**/*.test.*`) | `writing-tests`, `vitest` |
+Load `writing-tests` when the diff touches adapters or test files, and `claude-api` when it touches `src/matching/**`.
 
 ## Step 3: Code Quality Review
-
-### General Principles
-
-- **DRY** — Don't repeat yourself; extract shared logic
-- **YAGNI** — Don't build features that aren't needed yet
-- **Single Responsibility** — Functions do one thing well
-- **Readable code over comments** — Self-documenting through clear naming
 
 ### Pipeline-Specific Checks
 
@@ -94,4 +77,4 @@ Expected: No type errors
 
 ## Step 6: Hand Off
 
-After all blocking issues are fixed, report the review results and hand off to `finishing-a-development-branch` for PR creation or merge.
+After all blocking issues are fixed, report the review results. The author decides whether to open a PR or merge.
