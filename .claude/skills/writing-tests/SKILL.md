@@ -7,8 +7,8 @@ description: Use when writing tests for JobScout. Covers Vitest conventions for 
 
 ## Stack
 
-- **Framework**: Vitest 3.x
-- **Environment**: Node (not browser — pipeline-first, no React yet)
+- **Framework**: Vitest
+- **Environment**: Node. The run covers `src/` and `shared/`; `client/` is excluded
 - **Database**: Drizzle ORM + better-sqlite3 (in-memory for tests)
 - **Execution**: Sequential (`fileParallelism: false`) to avoid DB conflicts
 
@@ -27,7 +27,7 @@ src/
     llm.ts
     llm.test.ts              # LLM matching tests (mocked API)
   db/
-    schema.test.ts           # Schema validation tests
+    migrate.test.ts          # Migration tests
   pipeline.test.ts           # Integration tests
 ```
 
@@ -59,47 +59,7 @@ describe("ModuleName", () => {
 
 ## Adapter Testing
 
-Adapters make HTTP requests — mock the network, not the adapter internals.
-
-```typescript
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-// Mock fetch globally for adapter tests
-const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
-
-describe("NeogovAdapter", () => {
-  beforeEach(() => {
-    mockFetch.mockReset();
-  });
-
-  it("parses RSS feed into RawJobListing[]", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      text: () => Promise.resolve(SAMPLE_RSS_XML),
-    });
-
-    const adapter = new NeogovAdapter(config);
-    const listings = await adapter.fetch();
-
-    expect(listings).toHaveLength(3);
-    expect(listings[0]).toMatchObject({
-      title: expect.any(String),
-      sourceUrl: expect.stringContaining("governmentjobs"),
-      description: expect.any(String),
-    });
-  });
-
-  it("returns empty array on network error", async () => {
-    mockFetch.mockRejectedValueOnce(new Error("Network error"));
-
-    const adapter = new NeogovAdapter(config);
-    const listings = await adapter.fetch();
-
-    expect(listings).toEqual([]);
-  });
-});
-```
+Adapters make HTTP requests — mock the network, not the adapter internals. Spy on `globalThis.fetch` with `vi.spyOn`, as `src/adapters/adzuna.test.ts` does, and assert on the normalized `RawJobListing` fields and on error paths such as a rejected request or a non-OK response.
 
 ### Adapter Test Fixtures
 
@@ -122,155 +82,44 @@ const SAMPLE_RSS_XML = `<?xml version="1.0"?>
 
 **Always mock the Anthropic API** — never make real LLM calls in tests.
 
-```typescript
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-// Mock the Anthropic SDK
-vi.mock("@anthropic-ai/sdk", () => ({
-  default: vi.fn().mockImplementation(() => ({
-    messages: {
-      create: vi.fn(),
-    },
-  })),
-}));
-
-import Anthropic from "@anthropic-ai/sdk";
-const mockClient = new Anthropic();
-const mockCreate = vi.mocked(mockClient.messages.create);
-
-describe("LLMMatchingEngine", () => {
-  it("parses structured response into MatchResult", async () => {
-    mockCreate.mockResolvedValueOnce({
-      content: [{
-        type: "text",
-        text: JSON.stringify({
-          confidenceScore: 78,
-          categoryScores: { pay: 80, schedule: 90, location: 70, skills: 65, culture: 80 },
-          summary: "Strong schedule and location fit. Pay meets minimum.",
-          flags: ["salary not explicitly listed"],
-        }),
-      }],
-    } as any);
-
-    const result = await matchEngine.evaluate(samplePosting, sampleProfile);
-
-    expect(result.confidenceScore).toBe(78);
-    expect(result.flags).toContain("salary not explicitly listed");
-  });
-
-  it("handles malformed LLM response gracefully", async () => {
-    mockCreate.mockResolvedValueOnce({
-      content: [{ type: "text", text: "not valid json" }],
-    } as any);
-
-    const result = await matchEngine.evaluate(samplePosting, sampleProfile);
-
-    expect(result).toBeNull(); // or returns a low-confidence fallback
-  });
-});
-```
+`evaluateMatch(posting, profile, client)` takes the client as an argument, so pass a stub and leave the SDK module alone; `makeMockClient` in `src/matching/llm.test.ts` is the pattern. The stub returns what `LLMResponseSchema` validates: `categoryScores` with `pay`, `schedule`, `rolefit` and `growth`, plus `summary` and `flags`. `computeConfidence` derives `confidenceScore`, and the result stores `rolefit` as `skills` and `growth` as `culture`. Malformed responses return `null`.
 
 ## Database Tests
 
-Use in-memory SQLite for test isolation:
-
-```typescript
-import { describe, it, expect, beforeEach } from "vitest";
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import * as schema from "../db/schema.js";
-
-function createTestDb() {
-  const sqlite = new Database(":memory:");
-  const db = drizzle(sqlite, { schema });
-  migrate(db, { migrationsFolder: "./src/db/migrations" });
-  return db;
-}
-
-describe("JobPostings", () => {
-  let db: ReturnType<typeof createTestDb>;
-
-  beforeEach(() => {
-    db = createTestDb();
-  });
-
-  it("inserts and retrieves a job posting", async () => {
-    await db.insert(schema.jobPostings).values(sampleJobPosting);
-    const result = await db.select().from(schema.jobPostings);
-    expect(result).toHaveLength(1);
-    expect(result[0].title).toBe(sampleJobPosting.title);
-  });
-
-  it("enforces unique source_url constraint", async () => {
-    await db.insert(schema.jobPostings).values(sampleJobPosting);
-    expect(() =>
-      db.insert(schema.jobPostings).values(sampleJobPosting)
-    ).toThrow();
-  });
-});
-```
+Use `createTestDb()` from `src/test-helpers.ts`, which applies the migrations to a fresh in-memory SQLite database. Create one per test for isolation. Drizzle builders run only when awaited or given `.run()`, so a constraint test must execute the insert.
 
 ## Pre-filter Tests
 
 Test heuristic matching logic with various profile/posting combinations:
 
 ```typescript
-describe("PreFilter", () => {
+describe("prefilterPosting", () => {
   it("rejects posting outside candidate's location area", () => {
     const posting = makePosting({ location: "Seattle, WA" });
     const profile = makeProfile({ location: { acceptableAreas: ["Portland", "Beaverton"] } });
 
-    expect(preFilter(posting, profile)).toBe(false);
+    expect(prefilterPosting(posting, profile)).toBe(false);
   });
 
   it("rejects posting matching a dealbreaker", () => {
     const posting = makePosting({ description: "This is a commission-only position" });
     const profile = makeProfile({ dealbreakers: ["commission-only"] });
 
-    expect(preFilter(posting, profile)).toBe(false);
+    expect(prefilterPosting(posting, profile)).toBe(false);
   });
 
   it("passes posting with no disqualifying signals", () => {
     const posting = makePosting({ location: "Portland, OR", title: "Warehouse Worker" });
     const profile = makeProfile({ location: { acceptableAreas: ["Portland"] } });
 
-    expect(preFilter(posting, profile)).toBe(true);
+    expect(prefilterPosting(posting, profile)).toBe(true);
   });
 });
 ```
 
 ## Test Helpers
 
-Create factory functions for test data:
-
-```typescript
-// src/test-helpers.ts (or inline in test files)
-export function makePosting(overrides: Partial<RawJobListing> = {}): RawJobListing {
-  return {
-    sourceUrl: "https://example.com/job/123",
-    title: "Test Job",
-    company: "Test Company",
-    location: "Portland, OR",
-    description: "A test job posting",
-    ...overrides,
-  };
-}
-
-export function makeProfile(overrides: Partial<CandidateProfile> = {}): CandidateProfile {
-  return {
-    identity: { name: "Test Candidate" },
-    compensation: {},
-    benefits: {},
-    schedule: {},
-    location: { acceptableAreas: ["Portland"] },
-    experience: {},
-    preferences: {},
-    dealbreakers: [],
-    ...overrides,
-  };
-}
-```
+Use the shared helpers instead of writing new factories: `makePosting` and `makeProfile` in `src/test-helpers.ts`, and the app builders, `seed*` helpers and user fixtures in `src/test-helpers.route.ts` for route tests.
 
 ## Running Tests
 
