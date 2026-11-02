@@ -19,7 +19,7 @@ Find out:
 - how far the branch is behind `origin/main`
 - GitHub issues that match the branch topic
 
-If `data/jobscout.db` exists, read the newest `ingestion_logs` rows and report when the pipeline last ran and any recorded `errors`.
+If `data/jobscout.db` exists, read `name`, `last_run_at`, `last_run_status`, `last_run_items` and `last_run_errors` from `sources` where `is_enabled = 1`, and report them. Dry runs update these columns too. If no row has a `last_run_at`, say run state is unavailable.
 
 ## Step 2: Present Briefing
 
